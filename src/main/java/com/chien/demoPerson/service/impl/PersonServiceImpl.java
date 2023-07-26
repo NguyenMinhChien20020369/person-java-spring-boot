@@ -1,8 +1,15 @@
 package com.chien.demoPerson.service.impl;
 
+import com.chien.demoPerson.dto.PersonDto;
 import com.chien.demoPerson.entity.Person;
+import com.chien.demoPerson.exception.AppException;
 import com.chien.demoPerson.repository.PersonRepository;
 import com.chien.demoPerson.service.PersonService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import java.util.ArrayList;
+import java.util.List;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,16 +18,14 @@ public class PersonServiceImpl implements PersonService {
 
   @Autowired
   private PersonRepository personRepository;
+  @Autowired
+  private ModelMapper mapper;
+  @PersistenceContext
+  public EntityManager em;
 
   @Override
-  public Person create(Person person) {
-    if (person.getEmail() == null || person.getEmail().isEmpty()) {
-      return null;
-    }
-    if (person.getName() == null || person.getName().isEmpty()) {
-      return null;
-    }
-    return personRepository.save(person);
+  public Person create(PersonDto personDto) {
+    return personRepository.save(mapper.map(personDto, Person.class));
   }
 
   @Override
@@ -31,6 +36,8 @@ public class PersonServiceImpl implements PersonService {
     }
     fromDB.setEmail(person.getEmail());
     fromDB.setName(person.getName());
+    fromDB.setPhone(person.getPhone());
+    fromDB.setAddress(person.getAddress());
     return personRepository.save(fromDB);
   }
 
@@ -41,11 +48,33 @@ public class PersonServiceImpl implements PersonService {
 
   @Override
   public Person findById(Long id) {
-    return personRepository.findById(id).orElse(null);
+    Person person = personRepository.findById(id).orElse(null);
+    if (person == null) {
+      throw new AppException(404, "User not found");
+    }
+    return person;
   }
 
   @Override
-  public Iterable<Person> findAll() {
-    return personRepository.findAll();
+  public List<Person> findByName(String name) {
+    return personRepository.findByName(name);
+  }
+
+  @Override
+  public List<Person> findByPhone(String phone) {
+//    return em.createNamedQuery("Person.findByPhone").setParameter("phone", phone).getResultList();
+    return personRepository.findByPhone(phone);
+  }
+
+  @Override
+  public Iterable<PersonDto> findAll() {
+    List<Person> Persons = personRepository.findAll();
+    List<PersonDto> PersonDtos = new ArrayList<PersonDto>();
+    for (Person person : Persons) {
+      System.out.println(person);
+      PersonDto personDto = mapper.map(person, PersonDto.class);
+      PersonDtos.add(personDto);
+    }
+    return PersonDtos;
   }
 }
