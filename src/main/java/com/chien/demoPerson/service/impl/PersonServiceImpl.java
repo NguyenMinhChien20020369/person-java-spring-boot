@@ -1,5 +1,6 @@
 package com.chien.demoPerson.service.impl;
 
+import com.chien.demoPerson.aspect.TrackTime;
 import com.chien.demoPerson.dto.PersonDto;
 import com.chien.demoPerson.entity.Person;
 import com.chien.demoPerson.exception.AppException;
@@ -7,6 +8,8 @@ import com.chien.demoPerson.repository.PersonRepository;
 import com.chien.demoPerson.service.PersonService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import org.modelmapper.ModelMapper;
@@ -46,13 +49,15 @@ public class PersonServiceImpl implements PersonService {
     personRepository.deleteById(id);
   }
 
+  @TrackTime
   @Override
-  public Person findById(Long id) {
+  public PersonDto findById(Long id) {
     Person person = personRepository.findById(id).orElse(null);
     if (person == null) {
       throw new AppException(404, "User not found");
+    } else {
+      return mapper.map(person, PersonDto.class);
     }
-    return person;
   }
 
   @Override
@@ -66,6 +71,7 @@ public class PersonServiceImpl implements PersonService {
     return personRepository.findByPhone(phone);
   }
 
+  @TrackTime
   @Override
   public Iterable<PersonDto> findAll() {
     List<Person> Persons = personRepository.findAll();

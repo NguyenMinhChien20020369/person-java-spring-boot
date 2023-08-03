@@ -2,6 +2,7 @@ package com.chien.demoPerson.service;
 
 import com.chien.demoPerson.dto.PersonDto;
 import com.chien.demoPerson.entity.Person;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public interface PersonService {
@@ -12,7 +13,7 @@ public interface PersonService {
 
   void delete(Long id);
 
-  Person findById(Long id);
+  PersonDto findById(Long id);
   List<Person> findByName(String name);
   List<Person> findByPhone(String phone);
 
