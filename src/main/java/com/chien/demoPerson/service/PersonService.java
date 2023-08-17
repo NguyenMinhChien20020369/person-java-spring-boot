@@ -1,21 +1,12 @@
 package com.chien.demoPerson.service;
 
+import com.chien.demoPerson.dto.PersonCreationDto;
 import com.chien.demoPerson.dto.PersonDto;
-import com.chien.demoPerson.entity.Person;
-import java.net.URISyntaxException;
+import com.chien.demoPerson.dto.PersonUpdateDto;
 import java.util.List;
 
-public interface PersonService {
+public interface PersonService extends
+    GeneralService<PersonDto, PersonCreationDto, PersonUpdateDto> {
 
-  Person create(PersonDto personDto);
-
-  Person update(Long id, Person person);
-
-  void delete(Long id);
-
-  PersonDto findById(Long id);
-  List<Person> findByName(String name);
-  List<Person> findByPhone(String phone);
-
-  Iterable<PersonDto> findAll();
+  List<PersonDto> findByPhone(String phone);
 }

@@ -1,16 +1,13 @@
 package com.chien.demoPerson.controller;
 
+import com.chien.demoPerson.dto.PersonCreationDto;
 import com.chien.demoPerson.dto.PersonDto;
+import com.chien.demoPerson.dto.PersonUpdateDto;
 import com.chien.demoPerson.entity.Person;
-import com.chien.demoPerson.exception.AppException;
 import com.chien.demoPerson.service.PersonService;
-import jakarta.validation.Valid;
-import java.net.URISyntaxException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,7 +18,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -32,18 +28,18 @@ public class PersonController {
   private PersonService personService;
 
   @PostMapping
-  public Person create(@RequestBody @Validated PersonDto personDto) {
-    return personService.create(personDto);
+  public ResponseEntity<PersonDto> create(@RequestBody @Validated PersonCreationDto personCreationDto) {
+    return ResponseEntity.status(200).body(personService.create(personCreationDto));
   }
 
   @PutMapping("/{id}")
-  public Person update(@PathVariable Long id, @RequestBody Person person) {
-    return personService.update(id, person);
+  public ResponseEntity<PersonDto> update(@PathVariable Long id, @RequestBody @Validated PersonUpdateDto personUpdateDto) {
+    return ResponseEntity.status(200).body(personService.update(id, personUpdateDto));
   }
 
   @DeleteMapping("/{id}")
-  public void delete(@PathVariable Long id) {
-    personService.delete(id);
+  public ResponseEntity<PersonDto> delete(@PathVariable Long id) {
+    return ResponseEntity.status(200).body(personService.delete(id));
   }
   @GetMapping("/home")
   public String homepage() {
@@ -56,15 +52,15 @@ public class PersonController {
   }
 
   @GetMapping("/{id}")
-  public PersonDto findById(@PathVariable Long id) {
-      return personService.findById(id);
+  public ResponseEntity<PersonDto> findById(@PathVariable Long id) {
+      return ResponseEntity.status(200).body(personService.findById(id));
   }
   @GetMapping("/name/{name}")
-  public List<Person> findByName(@PathVariable String name) {
-    return personService.findByName(name);
+  public ResponseEntity<Iterable<PersonDto>> findByName(@PathVariable String name) {
+    return ResponseEntity.status(200).body(personService.findByName(name));
   }
   @GetMapping("/phone/{phone}")
-  public List<Person> findByPhone(@PathVariable String phone) {
-    return personService.findByPhone(phone);
+  public ResponseEntity<List<PersonDto>> findByPhone(@PathVariable String phone) {
+    return ResponseEntity.status(200).body(personService.findByPhone(phone));
   }
 }

@@ -1,6 +1,6 @@
 package com.chien.demoPerson.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -9,42 +9,34 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.Collection;
 import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@NoArgsConstructor
+@Data
 @AllArgsConstructor
-@Getter
-@Setter
-@NamedNativeQuery(name = "Person.findByPhone", query = "Select * from person where phone = :phone", resultClass = Person.class)
-public class Person {
+@NoArgsConstructor
+public class GroupOfPeople {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  private String username;
-  private String password;
   private String name;
-  private String email;
-  private String phone;
-  private String address;
 
-  @OneToMany(mappedBy = "person", cascade = CascadeType.ALL)
+  @ManyToMany
+  @JoinTable(name = "group_person", joinColumns = @JoinColumn(name = "group_id"), inverseJoinColumns = @JoinColumn(name = "person_id"))
+  @JsonManagedReference
+  private Set<Person> persons;
+
+  @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
   @EqualsAndHashCode.Exclude
   @ToString.Exclude
   private Collection<Goods> goods;
-
-  @ManyToMany(mappedBy = "persons", cascade = CascadeType.ALL)
-  @JsonBackReference
-  private Set<GroupOfPeople> groups;
 }

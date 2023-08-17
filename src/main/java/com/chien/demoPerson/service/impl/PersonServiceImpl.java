@@ -1,17 +1,18 @@
 package com.chien.demoPerson.service.impl;
 
 import com.chien.demoPerson.aspect.TrackTime;
+import com.chien.demoPerson.dto.PersonCreationDto;
 import com.chien.demoPerson.dto.PersonDto;
+import com.chien.demoPerson.dto.PersonUpdateDto;
 import com.chien.demoPerson.entity.Person;
 import com.chien.demoPerson.exception.AppException;
 import com.chien.demoPerson.repository.PersonRepository;
 import com.chien.demoPerson.service.PersonService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,26 +28,32 @@ public class PersonServiceImpl implements PersonService {
   public EntityManager em;
 
   @Override
-  public Person create(PersonDto personDto) {
-    return personRepository.save(mapper.map(personDto, Person.class));
+  public PersonDto create(PersonCreationDto personCreationDto) {
+    return mapper.map(personRepository.save(mapper.map(personCreationDto, Person.class)),
+        PersonDto.class);
   }
 
   @Override
-  public Person update(Long id, Person person) {
+  public PersonDto update(Long id, PersonUpdateDto personUpdateDto) {
     Person fromDB = personRepository.findById(id).orElse(null);
     if (fromDB == null) {
-      return null;
+      throw new AppException(404, "User not found");
     }
-    fromDB.setEmail(person.getEmail());
-    fromDB.setName(person.getName());
-    fromDB.setPhone(person.getPhone());
-    fromDB.setAddress(person.getAddress());
-    return personRepository.save(fromDB);
+    fromDB.setEmail(personUpdateDto.getEmail());
+    fromDB.setName(personUpdateDto.getName());
+    fromDB.setPhone(personUpdateDto.getPhone());
+    fromDB.setAddress(personUpdateDto.getAddress());
+    return mapper.map(personRepository.save(fromDB), PersonDto.class);
   }
 
   @Override
-  public void delete(Long id) {
+  public PersonDto delete(Long id) {
+    Person fromDB = personRepository.findById(id).orElse(null);
+    if (fromDB == null) {
+      throw new AppException(404, "User not found");
+    }
     personRepository.deleteById(id);
+    return mapper.map(fromDB, PersonDto.class);
   }
 
   @TrackTime
@@ -61,26 +68,30 @@ public class PersonServiceImpl implements PersonService {
   }
 
   @Override
-  public List<Person> findByName(String name) {
-    return personRepository.findByName(name);
+  public List<PersonDto> findByName(String name) {
+    return personRepository.findByName(name).stream()
+        .map(person -> mapper.map(person, PersonDto.class)).collect(
+            Collectors.toList());
   }
 
   @Override
-  public List<Person> findByPhone(String phone) {
+  public List<PersonDto> findByPhone(String phone) {
 //    return em.createNamedQuery("Person.findByPhone").setParameter("phone", phone).getResultList();
-    return personRepository.findByPhone(phone);
+    return personRepository.findByPhone(phone).stream()
+        .map(person -> mapper.map(person, PersonDto.class)).collect(
+            Collectors.toList());
   }
 
   @TrackTime
   @Override
   public Iterable<PersonDto> findAll() {
     List<Person> Persons = personRepository.findAll();
-    List<PersonDto> PersonDtos = new ArrayList<PersonDto>();
+    List<PersonDto> personDtos = new ArrayList<PersonDto>();
     for (Person person : Persons) {
       System.out.println(person);
       PersonDto personDto = mapper.map(person, PersonDto.class);
-      PersonDtos.add(personDto);
+      personDtos.add(personDto);
     }
-    return PersonDtos;
+    return personDtos;
   }
 }
