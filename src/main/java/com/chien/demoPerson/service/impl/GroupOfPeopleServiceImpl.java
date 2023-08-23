@@ -2,6 +2,7 @@ package com.chien.demoPerson.service.impl;
 
 import com.chien.demoPerson.config.ModelMapperConfig;
 import com.chien.demoPerson.dto.GroupOfPeopleCreationDto;
+import com.chien.demoPerson.dto.GroupOfPeopleDto;
 import com.chien.demoPerson.dto.PersonDto;
 import com.chien.demoPerson.entity.GroupOfPeople;
 import com.chien.demoPerson.entity.Person;
@@ -31,7 +32,7 @@ public class GroupOfPeopleServiceImpl implements GroupOfPeopleService {
   private ModelMapper mapper;
 
   @Override
-  public GroupOfPeople create(GroupOfPeopleCreationDto groupOfPeopleCreationDto) {
+  public GroupOfPeopleDto create(GroupOfPeopleCreationDto groupOfPeopleCreationDto) {
     GroupOfPeople groupOfPeople = mapper.map(groupOfPeopleCreationDto, GroupOfPeople.class);
     Set<Person> persons = new HashSet<>();
     for (Long id : groupOfPeopleCreationDto.getPersonIds()) {
@@ -42,11 +43,11 @@ public class GroupOfPeopleServiceImpl implements GroupOfPeopleService {
       persons.add(person);
     }
     groupOfPeople.setPersons(persons);
-    return groupOfPeopleRepository.save(groupOfPeople);
+    return mapper.map(groupOfPeopleRepository.save(groupOfPeople), GroupOfPeopleDto.class);
   }
 
   @Override
-  public GroupOfPeople update(Long id, GroupOfPeopleCreationDto groupOfPeopleCreationDto) {
+  public GroupOfPeopleDto update(Long id, GroupOfPeopleCreationDto groupOfPeopleCreationDto) {
     GroupOfPeople fromDB = groupOfPeopleRepository.findById(id).orElse(null);
     if (fromDB == null) {
       throw new AppException(404, "Group not found");
@@ -61,36 +62,40 @@ public class GroupOfPeopleServiceImpl implements GroupOfPeopleService {
       persons.add(person);
     }
     fromDB.setPersons(persons);
-    return groupOfPeopleRepository.save(fromDB);
+    return mapper.map(groupOfPeopleRepository.save(fromDB), GroupOfPeopleDto.class);
   }
 
   @Override
-  public GroupOfPeople delete(Long id) {
+  public GroupOfPeopleDto delete(Long id) {
     GroupOfPeople fromDB = groupOfPeopleRepository.findById(id).orElse(null);
     if (fromDB == null) {
       throw new AppException(404, "Group not found");
     }
+    GroupOfPeopleDto groupOfPeopleDto = mapper.map(fromDB, GroupOfPeopleDto.class);
     groupOfPeopleRepository.deleteById(id);
-    return fromDB;
+    return groupOfPeopleDto;
   }
 
   @Override
-  public GroupOfPeople findById(Long id) {
+  public GroupOfPeopleDto findById(Long id) {
     GroupOfPeople groupOfPeople = groupOfPeopleRepository.findById(id).orElse(null);
     if (groupOfPeople == null) {
       throw new AppException(404, "Group not found");
     } else {
-      return groupOfPeople;
+      return mapper.map(groupOfPeople, GroupOfPeopleDto.class);
     }
   }
 
   @Override
-  public List<GroupOfPeople> findByName(String name) {
-    return groupOfPeopleRepository.findByName(name);
+  public List<GroupOfPeopleDto> findByName(String name) {
+    return groupOfPeopleRepository.findByName(name).stream()
+        .map(groupOfPeople -> mapper.map(groupOfPeople, GroupOfPeopleDto.class)).collect(
+            Collectors.toList());
   }
 
   @Override
-  public Iterable<GroupOfPeople> findAll() {
-    return groupOfPeopleRepository.findAll();
+  public Iterable<GroupOfPeopleDto> findAll() {
+    return groupOfPeopleRepository.findAll().stream().map(groupOfPeople -> mapper.map(groupOfPeople, GroupOfPeopleDto.class)).collect(
+        Collectors.toList());
   }
 }
